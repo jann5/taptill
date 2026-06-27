@@ -65,6 +65,23 @@ function WorkspaceChrome() {
   const salesInFullscreen = activeScreen === "sales" && salesFullscreen;
 
   useEffect(() => {
+    const applyAppHeight = () => {
+      document.documentElement.style.setProperty(
+        "--app-height",
+        `${window.innerHeight}px`,
+      );
+    };
+
+    applyAppHeight();
+    window.addEventListener("resize", applyAppHeight);
+
+    return () => {
+      window.removeEventListener("resize", applyAppHeight);
+      document.documentElement.style.removeProperty("--app-height");
+    };
+  }, []);
+
+  useEffect(() => {
     const intervalId = window.setInterval(() => {
       setClock(formatClock(new Date()));
     }, 30_000);

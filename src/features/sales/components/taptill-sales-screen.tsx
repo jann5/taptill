@@ -258,8 +258,8 @@ export function TapTillSalesScreen({
           onAddProduct={handleAddProduct}
         />
 
-        <aside className="min-h-0 bg-panel lg:overflow-hidden">
-          <div className="grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto_auto]">
+        <aside className="min-h-0 bg-panel lg:overflow-y-auto">
+          <div className="grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)_auto_auto]">
             <div className="border-b border-border bg-white px-4 py-[clamp(12px,1.5vh,18px)] sm:px-5">
               <h2 className="text-[clamp(1.45rem,2vh,1.85rem)] font-black tracking-[-0.06em] text-slate-950">
                 Zamówienie
