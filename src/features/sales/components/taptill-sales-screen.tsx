@@ -258,15 +258,15 @@ export function TapTillSalesScreen({
           onAddProduct={handleAddProduct}
         />
 
-        <aside className="min-h-0 bg-panel lg:overflow-y-auto">
-          <div className="grid min-h-full min-w-0 grid-rows-[auto_minmax(0,1fr)_auto_auto]">
+        <aside className="min-h-0 overflow-hidden bg-panel">
+          <div className="grid h-full min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)_auto_auto]">
             <div className="border-b border-border bg-white px-4 py-[clamp(12px,1.5vh,18px)] sm:px-5">
               <h2 className="text-[clamp(1.45rem,2vh,1.85rem)] font-black tracking-[-0.06em] text-slate-950">
                 Zamówienie
               </h2>
             </div>
 
-            <div className="min-h-0 overflow-auto border-b border-border bg-white px-4 py-[clamp(10px,1.5vh,14px)] sm:px-5">
+            <div className="min-h-0 overflow-y-auto border-b border-border bg-white px-4 py-[clamp(10px,1.5vh,14px)] sm:px-5">
               {selectedProducts.length === 0 ? (
                 <div className="flex min-h-[84px] items-center justify-center rounded-[18px] border border-dashed border-slate-300 bg-slate-50/80 px-5 text-center">
                   <p className="text-[16px] font-black tracking-[-0.04em] text-slate-950 sm:text-[18px]">
