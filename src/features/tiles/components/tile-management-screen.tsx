@@ -20,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Plus } from "lucide-react";
+import { ImagePositionPicker } from "@/features/tiles/components/image-position-picker";
 import { ProductFormDialog } from "@/features/tiles/components/product-form-dialog";
 import { readProductImageFile } from "@/features/tiles/lib/product-image";
 import { useTaptillStore } from "@/features/workspace/state/taptill-store";
@@ -52,6 +53,7 @@ export function TileManagementScreen() {
   const [draft, setDraft] = useState<ProductDraft | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imageError, setImageError] = useState("");
+  const [positioningMode, setPositioningMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -129,7 +131,10 @@ export function TileManagementScreen() {
           ? current
           : mapProductToDraft(selectedProduct)),
         imageDataUrl,
+        imagePositionX: 50,
+        imagePositionY: 50,
       }));
+      setPositioningMode(false);
       setImageError("");
     } catch (error) {
       setImageError(
@@ -322,44 +327,42 @@ export function TileManagementScreen() {
                         />
                         {activeDraft.imageDataUrl ? (
                           <div className="mt-3 space-y-3">
-                            <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50">
-                              <div className="relative h-[188px] w-full">
-                                <Image
-                                  src={activeDraft.imageDataUrl}
-                                  alt=""
-                                  fill
-                                  unoptimized
-                                  sizes="320px"
-                                  className="object-cover"
-                                  style={{
-                                    objectPosition: formatImagePosition(
-                                      activeDraft.imagePositionX,
-                                      activeDraft.imagePositionY,
-                                    ),
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-                              <button
-                                type="button"
-                                onClick={() => {
+                            <div className="overflow-hidden rounded-[22px] bg-slate-50">
+                              <ImagePositionPicker
+                                active={positioningMode}
+                                imageDataUrl={activeDraft.imageDataUrl}
+                                positionX={activeDraft.imagePositionX}
+                                positionY={activeDraft.imagePositionY}
+                                sizes="320px"
+                                onChange={(x, y) =>
                                   setDraft((current) => ({
                                     ...(current?.productId === selectedProduct.id
                                       ? current
                                       : mapProductToDraft(selectedProduct)),
-                                    imagePositionX: 50,
-                                    imagePositionY: 50,
-                                  }));
+                                    imagePositionX: x,
+                                    imagePositionY: y,
+                                  }))
+                                }
+                              />
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPositioningMode((current) => !current);
                                 }}
-                                className="min-h-[52px] rounded-[18px] border border-border bg-white px-4 text-[15px] font-bold text-slate-700"
+                                className={`min-h-[40px] rounded-full px-3.5 text-[13px] font-bold transition ${
+                                  positioningMode
+                                    ? "bg-slate-950 text-white"
+                                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                }`}
                               >
-                                Wyśrodkuj zdjęcie
+                                {positioningMode ? "Gotowe" : "Ustaw środek"}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="min-h-[52px] rounded-[18px] border border-border bg-white px-4 text-[15px] font-bold text-slate-700"
+                                className="min-h-[40px] rounded-full bg-slate-100 px-3.5 text-[13px] font-bold text-slate-700 transition hover:bg-slate-200"
                               >
                                 Zmień zdjęcie
                               </button>
@@ -371,10 +374,13 @@ export function TileManagementScreen() {
                                       ? current
                                       : mapProductToDraft(selectedProduct)),
                                     imageDataUrl: null,
+                                    imagePositionX: 50,
+                                    imagePositionY: 50,
                                   }));
+                                  setPositioningMode(false);
                                   setImageError("");
                                 }}
-                                className="min-h-[52px] rounded-[18px] border border-[#fecaca] bg-[#fff5f5] px-4 text-[15px] font-bold text-[#b91c1c]"
+                                className="min-h-[40px] rounded-full bg-[#fff1f1] px-3.5 text-[13px] font-bold text-[#c73838] transition hover:bg-[#ffe3e3]"
                               >
                                 Usuń zdjęcie
                               </button>

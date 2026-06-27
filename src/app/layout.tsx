@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   applicationName: "TAPTILL",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "TAPTILL",
   },
   formatDetection: {

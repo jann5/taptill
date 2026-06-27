@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { accentPalette } from "@/features/sales/data/mock-catalog";
+import { ImagePositionPicker } from "@/features/tiles/components/image-position-picker";
 import type { Category, Product } from "@/features/sales/types";
 import { readProductImageFile } from "@/features/tiles/lib/product-image";
 
@@ -51,6 +51,7 @@ export function ProductFormDialog({
     initialProduct?.imagePositionY ?? 50,
   );
   const [imageError, setImageError] = useState("");
+  const [positioningMode, setPositioningMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const priceCents = parsePriceToCents(price);
@@ -70,6 +71,7 @@ export function ProductFormDialog({
       setImageDataUrl(nextImageDataUrl);
       setImagePositionX(50);
       setImagePositionY(50);
+      setPositioningMode(false);
       setImageError("");
     } catch (error) {
       setImageError(
@@ -123,36 +125,37 @@ export function ProductFormDialog({
                   />
                   {imageDataUrl ? (
                     <div className="space-y-3">
-                      <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50">
-                        <div className="relative h-[188px] w-full">
-                          <Image
-                            src={imageDataUrl}
-                            alt=""
-                            fill
-                            unoptimized
-                            sizes="(max-width: 640px) 100vw, 520px"
-                            className="object-cover"
-                            style={{
-                              objectPosition: `${imagePositionX}% ${imagePositionY}%`,
-                            }}
-                          />
-                        </div>
+                      <div className="overflow-hidden rounded-[22px] bg-slate-50">
+                        <ImagePositionPicker
+                          active={positioningMode}
+                          imageDataUrl={imageDataUrl}
+                          positionX={imagePositionX}
+                          positionY={imagePositionY}
+                          sizes="(max-width: 640px) 100vw, 520px"
+                          onChange={(x, y) => {
+                            setImagePositionX(x);
+                            setImagePositionY(y);
+                          }}
+                        />
                       </div>
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           type="button"
                           onClick={() => {
-                            setImagePositionX(50);
-                            setImagePositionY(50);
+                            setPositioningMode((current) => !current);
                           }}
-                          className="min-h-[52px] rounded-[18px] border border-slate-200 bg-white px-4 text-[15px] font-bold text-slate-700"
+                          className={`min-h-[40px] rounded-full px-3.5 text-[13px] font-bold transition ${
+                            positioningMode
+                              ? "bg-slate-950 text-white"
+                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          }`}
                         >
-                          Wyśrodkuj zdjęcie
+                          {positioningMode ? "Gotowe" : "Ustaw środek"}
                         </button>
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="min-h-[52px] rounded-[18px] border border-slate-200 bg-white px-4 text-[15px] font-bold text-slate-700"
+                          className="min-h-[40px] rounded-full bg-slate-100 px-3.5 text-[13px] font-bold text-slate-700 transition hover:bg-slate-200"
                         >
                           Zmień zdjęcie
                         </button>
@@ -162,9 +165,10 @@ export function ProductFormDialog({
                             setImageDataUrl(null);
                             setImagePositionX(50);
                             setImagePositionY(50);
+                            setPositioningMode(false);
                             setImageError("");
                           }}
-                          className="min-h-[52px] rounded-[18px] border border-[#fecaca] bg-[#fff5f5] px-4 text-[15px] font-bold text-[#b91c1c] sm:col-span-2"
+                          className="min-h-[40px] rounded-full bg-[#fff1f1] px-3.5 text-[13px] font-bold text-[#c73838] transition hover:bg-[#ffe3e3]"
                         >
                           Usuń zdjęcie
                         </button>
