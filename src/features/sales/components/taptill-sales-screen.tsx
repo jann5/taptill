@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Maximize2, Minimize2, Plus, X } from "lucide-react";
-import { ProductFormDialog } from "@/features/tiles/components/product-form-dialog";
+import { Maximize2, Minimize2, X } from "lucide-react";
 import { useTaptillStore } from "@/features/workspace/state/taptill-store";
 import type { OrderItems, Product } from "@/features/sales/types";
 
@@ -27,14 +26,7 @@ export function TapTillSalesScreen({
   isFullscreen: boolean;
   onToggleFullscreen: () => void | Promise<void>;
 }) {
-  const {
-    addProduct,
-    addSale,
-    categoryTabs,
-    products,
-    sales,
-    settings,
-  } = useTaptillStore();
+  const { addSale, categoryTabs, products, sales, settings } = useTaptillStore();
   const [activeCategoryId, setActiveCategoryId] = useState("");
   const [orderItems, setOrderItems] = useState<OrderItems>({});
   const [tenderedCents, setTenderedCents] = useState<null | number>(null);
@@ -43,7 +35,6 @@ export function TapTillSalesScreen({
   const [history, setHistory] = useState<SaleSnapshot[]>([]);
   const [settledToast, setSettledToast] = useState<string | null>(null);
   const [cashFeedback, setCashFeedback] = useState<CashFeedback | null>(null);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const cashFeedbackNonceRef = useRef(0);
 
   useEffect(() => {
@@ -256,7 +247,6 @@ export function TapTillSalesScreen({
           categoryTabs={visibleCategoryTabs}
           effectiveCategoryId={effectiveCategoryId}
           fullscreen={isFullscreen}
-          onAddTile={() => setAddDialogOpen(true)}
           onSelectCategory={(categoryId) =>
             setActiveCategoryId((currentCategoryId) =>
               currentCategoryId === categoryId ? "" : categoryId,
@@ -420,21 +410,6 @@ export function TapTillSalesScreen({
         </aside>
       </div>
 
-      {addDialogOpen ? (
-        <ProductFormDialog
-          title="Nowy kafelek"
-          categories={categoryTabs.filter((category) => category.id !== "all")}
-          onClose={() => setAddDialogOpen(false)}
-          onSubmit={(input) => {
-            addProduct(input);
-
-            if (input.categoryId) {
-              setActiveCategoryId(input.categoryId);
-            }
-          }}
-        />
-      ) : null}
-
       <div
         className={`pointer-events-none fixed left-1/2 top-5 z-20 -translate-x-1/2 rounded-full bg-black px-6 py-3 text-sm font-bold uppercase tracking-[0.16em] text-success shadow-[0_24px_80px_rgba(0,0,0,0.32)] transition-all ${
           settledToast
@@ -459,7 +434,6 @@ function CatalogPane({
   effectiveCategoryId,
   fullscreen = false,
   onAddProduct,
-  onAddTile,
   onSelectCategory,
   onToggleFullscreen,
   orderItems,
@@ -469,7 +443,6 @@ function CatalogPane({
   effectiveCategoryId: string;
   fullscreen?: boolean;
   onAddProduct: (productId: string, quantity?: number) => void;
-  onAddTile: () => void;
   onSelectCategory: (categoryId: string) => void;
   onToggleFullscreen: () => void;
   orderItems: OrderItems;
@@ -489,7 +462,6 @@ function CatalogPane({
         <CatalogGrid
           fullscreen={fullscreen}
           onAddProduct={onAddProduct}
-          onAddTile={onAddTile}
           orderItems={orderItems}
           products={products}
         />
@@ -576,15 +548,11 @@ function CatalogGrid({
   orderItems,
   products,
   fullscreen = false,
-  onAddTile,
-  showAddTile = true,
 }: {
   fullscreen?: boolean;
   onAddProduct: (productId: string, quantity?: number) => void;
-  onAddTile?: () => void;
   orderItems: OrderItems;
   products: Product[];
-  showAddTile?: boolean;
 }) {
   return (
     <div
@@ -616,22 +584,6 @@ function CatalogGrid({
             fullscreen={fullscreen}
           />
         ))}
-
-        {showAddTile && onAddTile ? (
-          <button
-            type="button"
-            onClick={onAddTile}
-            className={`flex touch-manipulation items-center justify-center rounded-[22px] border-2 border-dashed border-slate-300 bg-white/80 text-slate-400 transition hover:border-slate-400 hover:text-slate-600 ${
-              fullscreen
-                ? "min-h-[clamp(190px,23vh,280px)]"
-                : "min-h-[clamp(156px,20vh,228px)]"
-            }`}
-          >
-            <Plus
-              className={`${fullscreen ? "h-14 w-14" : "h-12 w-12"} stroke-[1.4]`}
-            />
-          </button>
-        ) : null}
       </div>
     </div>
   );
@@ -652,7 +604,7 @@ function CashPresetButton({
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-[clamp(50px,6.5vh,58px)] touch-manipulation rounded-[16px] border px-2 py-2.5 text-center text-[16px] font-black tracking-[-0.04em] transition duration-150 active:scale-[0.98] sm:text-[17px] ${
+      className={`min-h-[clamp(62px,7.8vh,74px)] touch-manipulation rounded-[18px] border px-3 py-3 text-center text-[18px] font-black tracking-[-0.04em] transition duration-150 active:scale-[0.98] sm:text-[20px] ${
         active
           ? "border-slate-950 bg-white text-slate-950 shadow-[0_12px_22px_rgba(15,23,42,0.08)]"
           : "border-border bg-white text-slate-900 hover:border-slate-500 hover:bg-slate-50"
@@ -677,6 +629,16 @@ function ProductTile({
   product: Product;
   quantity: number;
 }) {
+  const clickTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current !== null) {
+        window.clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (product.isSpacer) {
     return (
       <div
@@ -693,8 +655,19 @@ function ProductTile({
   return (
     <button
       type="button"
-      onClick={onAdd}
-      onDoubleClick={onAddDouble}
+      onClick={() => {
+        if (clickTimeoutRef.current !== null) {
+          window.clearTimeout(clickTimeoutRef.current);
+          clickTimeoutRef.current = null;
+          onAddDouble();
+          return;
+        }
+
+        clickTimeoutRef.current = window.setTimeout(() => {
+          clickTimeoutRef.current = null;
+          onAdd();
+        }, 180);
+      }}
       className={`relative flex touch-manipulation flex-col justify-end overflow-hidden rounded-[22px] border bg-white text-left shadow-[0_12px_28px_rgba(15,23,42,0.05)] transition active:scale-[0.995] ${
         fullscreen
           ? "min-h-[clamp(176px,21vh,252px)] px-5 pb-5 pt-8"

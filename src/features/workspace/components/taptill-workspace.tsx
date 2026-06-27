@@ -103,7 +103,7 @@ function WorkspaceChrome() {
   };
 
   return (
-    <main className="flex h-dvh min-h-dvh flex-col overflow-hidden bg-background text-foreground">
+    <main className="app-shell-height flex flex-col overflow-hidden bg-background text-foreground">
       <header className="flex h-[clamp(60px,7vh,72px)] shrink-0 items-center justify-between border-b border-border bg-white px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <BrandMark />
@@ -136,7 +136,7 @@ function WorkspaceChrome() {
         <section
           className={
             salesInFullscreen
-              ? "fixed inset-0 z-50 h-dvh min-h-dvh w-screen overflow-hidden bg-background"
+              ? "app-shell-height fixed inset-0 z-50 w-screen overflow-hidden bg-background"
               : "min-h-0 overflow-hidden"
           }
         >
